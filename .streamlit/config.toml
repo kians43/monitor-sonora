@@ -6,5 +6,4 @@ textColor           = "#1A1A2E"       # azul oscuro casi negro
 font                = "sans serif"
 
 [server]
-port = 8502
 headless = true
