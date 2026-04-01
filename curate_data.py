@@ -198,12 +198,9 @@ def is_relevant(row) -> tuple[bool, str]:
     if BLACKLIST_DOMINIO_RE.search(url) or BLACKLIST_DOMINIO_RE.search(medio):
         return False, f"dominio_irrelevante: {medio}"
 
-    # 3. Filtro positivo — diferenciado por tipo de medio:
-    #    - Medios locales de Sonora: ya son relevantes por definición,
-    #      solo se exige que el título no esté vacío.
-    #    - Medios nacionales / GDELT: deben contener keyword política explícita.
-    es_local = medio.lower() in MEDIOS_LOCALES_SONORA
-    if not es_local and not REQUIRED_RE.search(titulo):
+    # 3. Filtro positivo — aplica a TODOS los medios sin excepción.
+    #    Todos los artículos deben contener al menos una keyword política explícita.
+    if not REQUIRED_RE.search(titulo):
         return False, "sin_keyword_relevante"
 
     return True, "ok"
