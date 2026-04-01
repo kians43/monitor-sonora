@@ -306,7 +306,6 @@ def _is_english_title(titulo: str, medio: str) -> bool:
     return not bool(_ES_WORDS.search(titulo))
 
 
-@st.cache_data(show_spinner="Cargando datos…")
 def load_csv(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
     df.columns = df.columns.str.strip().str.lower()
