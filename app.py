@@ -4,23 +4,6 @@ import plotly.express as px
 from collections import Counter
 import re
 import os
-import nltk
-from nltk.corpus import stopwords
-
-# ---------------------------------------------------------------------------
-# NLTK
-# ---------------------------------------------------------------------------
-def _ensure_nltk():
-    for _res, _kind in [("stopwords", "corpora"), ("punkt", "tokenizers")]:
-        try:
-            nltk.data.find(f"{_kind}/{_res}")
-        except LookupError:
-            try:
-                nltk.download(_res, quiet=True)
-            except Exception:
-                pass
-
-_ensure_nltk()
 
 # ---------------------------------------------------------------------------
 # PÁGINA
@@ -210,21 +193,24 @@ hr { border-color: #e2e8f0 !important; margin: 1.5rem 0 !important; }
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# STOPWORDS
+# STOPWORDS — lista estática, sin dependencia de NLTK
 # ---------------------------------------------------------------------------
-STOPWORDS_ES = set()
-try:
-    STOPWORDS_ES = set(stopwords.words("spanish"))
-except Exception:
-    pass
-
-STOPWORDS_ES.update({
+STOPWORDS_ES = {
+    "de", "la", "que", "el", "en", "y", "a", "los", "del", "se", "las",
+    "por", "un", "para", "con", "una", "su", "al", "lo", "como", "más",
+    "pero", "sus", "le", "ya", "o", "este", "sí", "porque", "esta",
+    "entre", "cuando", "muy", "sin", "sobre", "también", "me", "hasta",
+    "hay", "donde", "quien", "desde", "todo", "nos", "durante", "todos",
+    "uno", "les", "ni", "contra", "otros", "ese", "eso", "ante", "ellos",
+    "e", "esto", "mí", "antes", "algunos", "qué", "unos", "yo", "otro",
+    "otras", "otra", "él", "tanto", "esa", "estos", "mucho", "quienes",
+    "nada", "muchos", "cual", "poco", "ella", "estar", "estas", "algunas",
+    "algo", "nosotros", "mi", "mis", "tú", "te", "ti", "tu", "tus",
     "si", "ser", "así", "solo", "tan", "bien", "ya", "dice", "dijo",
-    "hay", "van", "ver", "tras", "dos", "tres", "más", "también",
-    "sobre", "durante", "puede", "pero", "sin", "con", "que", "del",
-    "las", "los", "una", "uno", "por", "para", "como", "este", "esta",
-    "estos", "estas", "ese", "esa", "esos", "esas", "sus", "son",
-})
+    "hay", "van", "ver", "tras", "dos", "tres", "también",
+    "puede", "sin", "con", "sus", "son", "fue", "han", "son", "está",
+    "son", "ha", "era", "ser", "son", "han", "años", "nuevo", "nueva",
+}
 
 # ---------------------------------------------------------------------------
 # MAPA DE NOMBRES — GDELT devuelve dominios, los normalizamos
