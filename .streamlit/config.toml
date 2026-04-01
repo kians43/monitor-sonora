@@ -1,0 +1,10 @@
+[theme]
+primaryColor        = "#C0392B"       # rojo institucional
+backgroundColor     = "#F8F9FA"       # fondo gris muy claro
+secondaryBackgroundColor = "#FFFFFF"  # sidebar blanco
+textColor           = "#1A1A2E"       # azul oscuro casi negro
+font                = "sans serif"
+
+[server]
+port = 8502
+headless = true
