@@ -84,11 +84,18 @@ def fetch_youtube(keywords):
         print("  [!] Instala yt-dlp:  pip install yt-dlp")
         return []
 
-    ydl_opts = {
+    # Primera pasada: obtener IDs con extract_flat (rápido)
+    opts_flat = {
         "quiet": True,
         "no_warnings": True,
-        # extract_flat omite metadatos individuales (incluyendo upload_date).
-        # Sin él, yt_dlp consulta cada video y devuelve la fecha real de subida.
+        "skip_download": True,
+        "ignoreerrors": True,
+        "extract_flat": True,
+    }
+    # Segunda pasada: obtener metadatos individuales (upload_date)
+    opts_meta = {
+        "quiet": True,
+        "no_warnings": True,
         "skip_download": True,
         "ignoreerrors": True,
     }
@@ -97,21 +104,38 @@ def fetch_youtube(keywords):
     for kw in keywords:
         print(f"  YouTube: buscando '{kw}'...")
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(opts_flat) as ydl:
                 result = ydl.extract_info(f"ytsearch20:{kw}", download=False)
             videos = result.get("entries", []) or []
+
             for v in videos:
                 vid_id = v.get("id", "")
-                titulo = (v.get("title", "") or "").strip()
-                url    = f"https://www.youtube.com/watch?v={vid_id}" if vid_id else ""
-                # upload_date viene como "20240315" cuando está disponible
+                if not vid_id:
+                    continue
+                url = f"https://www.youtube.com/watch?v={vid_id}"
+                # Intentar obtener upload_date del resultado flat primero
                 raw_date = v.get("upload_date", "") or ""
+                titulo   = (v.get("title", "") or "").strip()
+
+                # Si no hay fecha, obtener metadatos individuales
+                if not raw_date:
+                    try:
+                        with yt_dlp.YoutubeDL(opts_meta) as ydl2:
+                            info = ydl2.extract_info(url, download=False)
+                        if info:
+                            raw_date = info.get("upload_date", "") or ""
+                            if not titulo:
+                                titulo = (info.get("title", "") or "").strip()
+                    except Exception:
+                        pass
+                    time.sleep(0.3)
+
                 try:
                     fecha = datetime.strptime(raw_date, "%Y%m%d").strftime("%Y-%m-%d") if raw_date else ""
                 except Exception:
                     fecha = ""
 
-                if titulo and url:
+                if titulo and url and fecha:
                     rows.append({
                         "titulo": titulo,
                         "url":    url,
@@ -119,7 +143,8 @@ def fetch_youtube(keywords):
                         "medio":  "YouTube",
                         "fuente": "youtube",
                     })
-            print(f"    -> {len(videos)} videos")
+
+            print(f"    -> {len([r for r in rows if r['fuente']=='youtube'])} videos con fecha")
         except Exception as e:
             print(f"    [!] Error YouTube '{kw}': {e}")
         time.sleep(1)
