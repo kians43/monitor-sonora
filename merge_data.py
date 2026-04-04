@@ -42,13 +42,15 @@ def main():
     df = pd.concat([df_noticias, df_social], ignore_index=True)
 
     df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
-    # Registros sin fecha válida se descartan — asignar fecha de hoy distorsiona
-    # la línea de tiempo (todos los videos sin fecha aparecen el día de descarga)
-    antes = len(df)
-    df = df.dropna(subset=["fecha"])
-    sin_fecha = antes - len(df)
+    # YouTube sin fecha se conserva — el usuario acepta incluirlos sin fecha
+    # Solo se descartan registros sin fecha que NO sean YouTube
+    mask_sin_fecha = df["fecha"].isna()
+    mask_no_youtube = df["fuente"].str.lower() != "youtube"
+    descartar = mask_sin_fecha & mask_no_youtube
+    sin_fecha = descartar.sum()
     if sin_fecha:
-        print(f"  [!] {sin_fecha} registros descartados por fecha inválida o vacía")
+        print(f"  [!] {sin_fecha} registros descartados por fecha invalida o vacia")
+    df = df[~descartar]
     df = df.drop_duplicates(subset=["url"])
     df = df.sort_values("fecha", ascending=False).reset_index(drop=True)
 

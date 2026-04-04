@@ -145,13 +145,15 @@ def fetch_youtube(keywords):
                 except Exception:
                     fecha = ""
 
-                if titulo and url and fecha:
-                    try:
-                        fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
-                    except Exception:
-                        fecha_dt = None
-                    if fecha_dt is None or not (FECHA_INICIO <= fecha_dt <= FECHA_FIN):
-                        continue
+                if titulo and url:
+                    # Validar fecha si existe; si no, incluir igual (relevante por keyword)
+                    if fecha:
+                        try:
+                            fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
+                            if not (FECHA_INICIO <= fecha_dt <= FECHA_FIN):
+                                continue
+                        except Exception:
+                            fecha = ""  # fecha inválida → se incluye sin fecha
                     rows.append({
                         "titulo": titulo,
                         "url":    url,

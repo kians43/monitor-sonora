@@ -225,13 +225,16 @@ def main():
     print(f"  Registros antes : {total_original}")
 
     # Filtro de fechas — solo el período del contrato
+    # YouTube sin fecha se conserva (el usuario lo acepta)
     df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
     antes_fecha = len(df)
-    df = df[(df["fecha"] >= FECHA_INICIO) & (df["fecha"] <= FECHA_FIN)]
+    mask_en_rango  = (df["fecha"] >= FECHA_INICIO) & (df["fecha"] <= FECHA_FIN)
+    mask_youtube_sin_fecha = (df["fuente"].str.lower() == "youtube") & df["fecha"].isna()
+    df = df[mask_en_rango | mask_youtube_sin_fecha]
     fuera_rango = antes_fecha - len(df)
     if fuera_rango:
-        print(f"  Fuera de rango  : {fuera_rango} ({FECHA_INICIO.date()} – {FECHA_FIN.date()})")
-    df["fecha"] = df["fecha"].dt.strftime("%Y-%m-%d")
+        print(f"  Fuera de rango  : {fuera_rango} ({FECHA_INICIO.date()} - {FECHA_FIN.date()})")
+    df["fecha"] = df["fecha"].dt.strftime("%Y-%m-%d").fillna("")
     df = df.reset_index(drop=True)
 
     resultados = df.apply(is_relevant, axis=1)

@@ -174,6 +174,66 @@ RSS_SOURCES = [
 ]
 
 # ---------------------------------------------------------------------------
+# GOOGLE NEWS RSS — queries históricas por período
+# ---------------------------------------------------------------------------
+GOOGLE_NEWS_QUERIES = [
+    '"Alfonso Durazo" Sonora 2025',
+    '"Alfonso Durazo" Sonora 2026',
+    '"Alfonso Durazo" gobernador diciembre 2025',
+    '"Alfonso Durazo" gobernador enero 2026',
+    '"Alfonso Durazo" gobernador febrero 2026',
+    '"Alfonso Durazo" gobernador marzo 2026',
+    '"Gobierno de Sonora" 2025',
+    '"Gobierno de Sonora" 2026',
+    '"Gobierno de Sonora" diciembre 2025',
+    '"Gobierno de Sonora" enero 2026',
+    '"Gobierno de Sonora" febrero 2026',
+    '"Gobierno de Sonora" seguridad 2026',
+]
+
+def fetch_google_news() -> list[dict]:
+    from urllib.parse import quote as q
+    rows = []
+    seen = set()
+    for query in GOOGLE_NEWS_QUERIES:
+        url = f"https://news.google.com/rss/search?q={q(query)}&hl=es-419&gl=MX&ceid=MX:es-419"
+        print(f"  Google News: {query}")
+        try:
+            feed = feedparser.parse(url)
+            count = 0
+            for e in feed.entries:
+                link = e.get("link", "")
+                if link in seen:
+                    continue
+                titulo = (e.get("title", "") or "").strip()
+                # Google News titles incluyen " - Medio" al final — limpiar
+                titulo = re.sub(r"\s*-\s*[^-]{3,40}$", "", titulo).strip()
+                published = e.get("published_parsed") or e.get("updated_parsed")
+                if not published:
+                    continue
+                fecha = datetime(*published[:6])
+                if not (FECHA_INICIO <= fecha <= FECHA_FIN):
+                    continue
+                seen.add(link)
+                # Extraer nombre del medio del título original de Google News
+                orig = e.get("title", "")
+                medio_match = re.search(r"-\s*([^-]{3,40})$", orig)
+                medio = medio_match.group(1).strip() if medio_match else "Google News"
+                rows.append({
+                    "titulo": titulo,
+                    "url":    link,
+                    "fecha":  fecha,
+                    "medio":  medio,
+                    "fuente": "rss",
+                })
+                count += 1
+            print(f"    -> {count} articulos en rango")
+        except Exception as e:
+            print(f"    [!] Error: {e}")
+        time.sleep(1)
+    return rows
+
+# ---------------------------------------------------------------------------
 # FILTRO DE RELEVANCIA — aplica a feeds nacionales
 # ---------------------------------------------------------------------------
 SONORA_RE = re.compile(
@@ -382,6 +442,10 @@ def main():
     # ── RSS ──
     print("\n[2/2] RSS")
     all_rows.extend(fetch_all_rss())
+
+    # ── Google News ──
+    print("\n[3/3] Google News RSS")
+    all_rows.extend(fetch_google_news())
 
     # ── DataFrame ──
     df = pd.DataFrame(all_rows)
