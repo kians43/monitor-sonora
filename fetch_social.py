@@ -19,7 +19,13 @@ from datetime import datetime
 # ---------------------------------------------------------------------------
 # CONFIGURACIÓN
 # ---------------------------------------------------------------------------
-KEYWORDS = ["Sonora", "Durazo", "Gobierno de Sonora"]
+KEYWORDS = [
+    "Alfonso Durazo gobernador",
+    "Gobierno de Sonora noticias",
+    "Durazo Sonora 2025",
+    "Durazo Sonora 2026",
+    "seguridad Sonora Durazo",
+]
 OUTPUT_FILE = "social.csv"
 
 # Período del contrato — solo se guardan resultados dentro de este rango

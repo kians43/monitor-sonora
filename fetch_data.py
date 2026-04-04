@@ -14,6 +14,7 @@ Genera: articulos.csv
 """
 
 import sys
+sys.stdout.reconfigure(encoding='utf-8')
 import requests
 import feedparser
 import pandas as pd
@@ -139,18 +140,29 @@ RSS_SOURCES = [
 
     # ── Desactivados — documentados para referencia ──────────────────────────
     {
+        "name": "El Universal",
+        "url": "https://www.eluniversal.com.mx/arc/outboundfeeds/rss/?outputType=xml",
+        "scope": "nacional",
+        "enabled": True,
+    },
+    {
         "name": "Reforma",
         "url": "https://www.reforma.com/rss/portada.xml",
         "scope": "nacional",
         "enabled": False,
-        "note": "RSS detrás de paywall duro — responde 200 pero sin entradas para no-suscriptores.",
+        "note": "Solo 6 entradas sin paywall — relación señal/ruido demasiado baja.",
     },
     {
         "name": "Tribuna Sonora",
-        "url": "https://www.tribuna.com.mx/rss.xml",
+        "url": "https://www.tribuna.com.mx/feed",
         "scope": "sonora",
-        "enabled": False,
-        "note": "URL devuelve 404 — feed descontinuado. Pendiente scraping HTML alternativo.",
+        "enabled": True,
+    },
+    {
+        "name": "El Sol de Hermosillo",
+        "url": "https://www.elsoldehermosillo.com.mx/rss.xml",
+        "scope": "sonora",
+        "enabled": True,
     },
     {
         "name": "Milenio",
@@ -258,7 +270,7 @@ def gdelt_search(query: str, fecha_inicio: datetime = None,
         except Exception as e:
             if intento < 2:
                 print(f"  [GDELT RETRY {intento+1}] '{query}': {e}")
-                time.sleep(5)
+                time.sleep(15)
             else:
                 print(f"  [GDELT ERROR] '{query}': {e}")
                 return []
@@ -356,7 +368,7 @@ def main():
 
     all_rows = []
 
-    print(f"\n  Período: {FECHA_INICIO.date()} → {FECHA_FIN.date()}")
+    print(f"\n  Periodo: {FECHA_INICIO.date()} a {FECHA_FIN.date()}")
 
     # ── GDELT ──
     print("\n[1/2] GDELT")
@@ -365,7 +377,7 @@ def main():
         rows = gdelt_search(kw, FECHA_INICIO, FECHA_FIN, MAX_GDELT_POR_QUERY)
         print(f"  → {len(rows)} artículos")
         all_rows.extend(rows)
-        time.sleep(2)
+        time.sleep(10)
 
     # ── RSS ──
     print("\n[2/2] RSS")
