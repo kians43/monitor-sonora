@@ -20,9 +20,14 @@ Guarda: articulos.csv  (reemplaza con versión curada)
 import pandas as pd
 import re
 import os
+from datetime import datetime
 
 INPUT_FILE  = "articulos.csv"
 OUTPUT_FILE = "articulos.csv"
+
+# Período del contrato
+FECHA_INICIO = datetime(2025, 12, 1)
+FECHA_FIN    = datetime(2026, 3, 9)
 
 # ---------------------------------------------------------------------------
 # MEDIOS LOCALES DE SONORA — ya son específicos por definición.
@@ -218,6 +223,16 @@ def main():
     df = pd.read_csv(INPUT_FILE, encoding="utf-8-sig")
     total_original = len(df)
     print(f"  Registros antes : {total_original}")
+
+    # Filtro de fechas — solo el período del contrato
+    df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
+    antes_fecha = len(df)
+    df = df[(df["fecha"] >= FECHA_INICIO) & (df["fecha"] <= FECHA_FIN)]
+    fuera_rango = antes_fecha - len(df)
+    if fuera_rango:
+        print(f"  Fuera de rango  : {fuera_rango} ({FECHA_INICIO.date()} – {FECHA_FIN.date()})")
+    df["fecha"] = df["fecha"].dt.strftime("%Y-%m-%d")
+    df = df.reset_index(drop=True)
 
     resultados = df.apply(is_relevant, axis=1)
     mascaras   = [r[0] for r in resultados]

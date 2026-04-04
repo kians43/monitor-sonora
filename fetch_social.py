@@ -21,6 +21,10 @@ from datetime import datetime
 # ---------------------------------------------------------------------------
 KEYWORDS = ["Sonora", "Durazo", "Gobierno de Sonora"]
 OUTPUT_FILE = "social.csv"
+
+# Período del contrato — solo se guardan resultados dentro de este rango
+FECHA_INICIO = datetime(2025, 12, 1)
+FECHA_FIN    = datetime(2026, 3, 9)
 HEADERS = {"User-Agent": "Mozilla/5.0 (research-project/1.0)"}
 
 # Instancias públicas de Nitter (se prueban en orden hasta que una funcione)
@@ -136,6 +140,12 @@ def fetch_youtube(keywords):
                     fecha = ""
 
                 if titulo and url and fecha:
+                    try:
+                        fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
+                    except Exception:
+                        fecha_dt = None
+                    if fecha_dt is None or not (FECHA_INICIO <= fecha_dt <= FECHA_FIN):
+                        continue
                     rows.append({
                         "titulo": titulo,
                         "url":    url,
@@ -196,7 +206,13 @@ def fetch_nitter(keywords):
                 # Convertir URLs de Nitter a Twitter
                 link = re.sub(r"https?://[^/]+/", "https://twitter.com/", link, count=1)
 
-                if titulo and link:
+                if titulo and link and fecha:
+                    try:
+                        fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
+                    except Exception:
+                        fecha_dt = None
+                    if fecha_dt is None or not (FECHA_INICIO <= fecha_dt <= FECHA_FIN):
+                        continue
                     rows.append({
                         "titulo": titulo,
                         "url": link,
